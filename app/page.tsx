@@ -1,65 +1,94 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect } from "react";
 
 export default function Home() {
+  const apiKey = "a3f30594afc32b07d41d92e034e5166e";
+  const [city, setCity] = useState<WeatherData | null>(null);
+  const [weather, setWeather] = useState<string>("");
+
+  useEffect(() => {
+    if (city) {
+      (document.getElementById("my_modal_1") as HTMLDialogElement)?.showModal();
+    }
+  }, [city]);
+
+  interface WeatherData {
+    name: string;
+    main: {
+      temp: number;
+      humidity: number;
+    };
+    wind: {
+      speed: number;
+    };
+  }
+
+  async function getWeather() {
+    const response = await fetch(
+      `https://api.openweathermap.org/geo/1.0/direct?q=${weather}&limit=1&appid=${apiKey}`,
+    );
+    const data = await response.json();
+    const { lat, lon } = data[0];
+
+    const weatherResponse = await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`,
+    );
+
+    const weatherData: WeatherData = await weatherResponse.json();
+
+    console.log(weatherData);
+    setCity(weatherData);
+  }
+  const btnHandler = (e) => {
+    e.preventDefault();
+    if (!weather) return;
+    getWeather();
+    setWeather("");
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="flex justify-center items-center h-screen bg-gradient-to-r from-blue-500 to-purple-500">
+      <div className="container bg-white text-black border border-2 border-gray-300 p-4 flex flex-col items-center justify-center gap-4 max-w-md rounded-lg shadow-lg">
+        <h1 className="text-3xl p-2 font-bold">Weather App</h1>
+        <form action="submit" className="flex flex-col">
+          <input
+            value={weather}
+            onChange={(e) => setWeather(e.target.value)}
+            className="p-2 text-xl text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            type="text"
+            placeholder="Enter the city"
+          />
+          <button
+            onClick={(e) => btnHandler(e)}
+            type="submit"
+            className="btn btn-primary m-2"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Get Weather
+          </button>
+        </form>
+        {city && (
+          <dialog
+            id="my_modal_1"
+            className="modal bg-gradient-to-r from-blue-500 to-purple-500"
           >
-            Documentation
-          </a>
-        </div>
-      </main>
+            <div className="modal-box bg-white">
+              <h3 className="font-bold text-xl flex justify-center p-2">
+                Weather Details
+              </h3>
+              <p className="py-4 text-lg">City : {city.name}</p>
+              <p className="py-4 text-lg">Temp : {city.main.temp}°C</p>
+              <p className="py-4 text-lg">Humidity : {city.main.humidity}%</p>
+              <p className="py-4 text-lg">Wind : {city.wind.speed}m/s</p>
+              <div className="modal-action">
+                <form method="dialog">
+                  <button className="btn">Close</button>
+                </form>
+              </div>
+            </div>
+          </dialog>
+        )}
+      </div>
     </div>
   );
 }
