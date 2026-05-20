@@ -40,7 +40,7 @@ export default function Home() {
     console.log(weatherData);
     setCity(weatherData);
   }
-  const btnHandler = (e) => {
+  const btnHandler = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!weather) return;
     getWeather();
@@ -51,7 +51,7 @@ export default function Home() {
     <div className="flex justify-center items-center h-screen bg-gradient-to-r from-blue-500 to-purple-500">
       <div className="container bg-white text-black border border-2 border-gray-300 p-4 flex flex-col items-center justify-center gap-4 max-w-md rounded-lg shadow-lg">
         <h1 className="text-3xl p-2 font-bold">Weather App</h1>
-        <form action="submit" className="flex flex-col">
+        <form onSubmit={btnHandler} className="flex flex-col">
           <input
             value={weather}
             onChange={(e) => setWeather(e.target.value)}
