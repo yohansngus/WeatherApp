@@ -59,11 +59,7 @@ export default function Home() {
             type="text"
             placeholder="Enter the city"
           />
-          <button
-            onClick={(e) => btnHandler(e)}
-            type="submit"
-            className="btn btn-primary m-2"
-          >
+          <button type="submit" className="btn btn-primary m-2">
             Get Weather
           </button>
         </form>
