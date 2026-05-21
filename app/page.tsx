@@ -1,17 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function Home() {
   const apiKey = "a3f30594afc32b07d41d92e034e5166e";
   const [city, setCity] = useState<WeatherData | null>(null);
   const [weather, setWeather] = useState<string>("");
+  const inpRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (city) {
       (document.getElementById("my_modal_1") as HTMLDialogElement)?.showModal();
     }
   }, [city]);
+
+  useEffect(() => {
+    inpRef.current?.focus();
+  }, []);
 
   interface WeatherData {
     name: string;
@@ -25,20 +30,23 @@ export default function Home() {
   }
 
   async function getWeather() {
-    const response = await fetch(
-      `https://api.openweathermap.org/geo/1.0/direct?q=${weather}&limit=1&appid=${apiKey}`,
-    );
-    const data = await response.json();
-    const { lat, lon } = data[0];
+    try {
+      const response = await fetch(
+        `https://api.openweathermap.org/geo/1.0/direct?q=${weather}&limit=1&appid=${apiKey}`,
+      );
+      const data = await response.json();
+      const { lat, lon } = data[0];
 
-    const weatherResponse = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`,
-    );
+      const weatherResponse = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`,
+      );
 
-    const weatherData: WeatherData = await weatherResponse.json();
-
-    console.log(weatherData);
-    setCity(weatherData);
+      const weatherData: WeatherData = await weatherResponse.json();
+      setCity(weatherData);
+    } catch (error: any) {
+      console.log("You have error", error.message);
+      setCity(null);
+    }
   }
   const btnHandler = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -53,6 +61,7 @@ export default function Home() {
         <h1 className="text-3xl p-2 font-bold">Weather App</h1>
         <form onSubmit={btnHandler} className="flex flex-col">
           <input
+            ref={inpRef}
             value={weather}
             onChange={(e) => setWeather(e.target.value)}
             className="p-2 text-xl text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
